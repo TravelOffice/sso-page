@@ -20,6 +20,20 @@ class AuthProvider {
         onFailure(error: any) {
           reject(new Error(error));
         },
+        newPasswordRequired(userAttributes: any) {
+          // User was signed up by an admin and must provide new
+          // password and required attributes, if any, to complete
+          // authentication.
+
+          // the api doesn't accept this field back
+          const {
+            email_verified: emailVerified,
+            phone_number_verified: phoneNumberVerified,
+            ...newUserAttributes
+          } = userAttributes;
+          // Get these details and call
+          cognitoUser.completeNewPasswordChallenge(password, newUserAttributes, this);
+        },
       });
     });
   }
