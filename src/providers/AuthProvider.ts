@@ -29,6 +29,8 @@ class AuthProvider {
           const {
             email_verified: emailVerified,
             phone_number_verified: phoneNumberVerified,
+            email,
+            phone_number: phoneNumber,
             ...newUserAttributes
           } = userAttributes;
           // Get these details and call
