@@ -55,6 +55,14 @@ class AuthProvider {
       });
     });
   }
+
+  signOut = () : void => {
+    const currentUser = userPool.getCurrentUser();
+    if (!currentUser) {
+      return;
+    }
+    currentUser.signOut();
+  }
 }
 
 const authProvider = new AuthProvider();

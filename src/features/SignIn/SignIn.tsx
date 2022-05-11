@@ -32,7 +32,7 @@ function useSignIn() {
   const signIn = useCallback((params: SignInParams) => {
     setIsSigningIn(true);
     authProvider.signIn(params.username, params.password).then((session) => {
-      const message = { type: 'cognito', session };
+      const message = { type: 'cognito-signin', session };
       window.parent.postMessage(message, '*');
     }).catch((error: Error) => {
       toast.error(<ErrorToast text={error.message} />, {
