@@ -69,7 +69,18 @@ class AuthProvider {
     cognitoUser.forgotPassword({
       onSuccess: (result) => console.log('call result', result),
       onFailure: (err) => alert(err),
+    });
+  }
 
+  resetPassword = (username: string, verificationCode: string, newPassword: string) => {
+    const cognitoUser = new CognitoUser({ Username: username, Pool: userPool });
+    cognitoUser.confirmPassword(verificationCode, newPassword, {
+      onSuccess() {
+        console.log('Password confirmed!');
+      },
+      onFailure(err) {
+        console.log('Password not confirmed!', err);
+      },
     });
   }
 }
