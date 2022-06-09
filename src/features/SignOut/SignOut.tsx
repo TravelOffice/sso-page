@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import authProvider from '../../providers/AuthProvider';
+import authProvider from '@providers/AuthProvider';
 
 export default function SignOut() {
   useEffect(() => {

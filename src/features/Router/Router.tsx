@@ -5,7 +5,9 @@ import {
 import SignIn from '../SignIn/SignIn';
 import Initial from '../Initial/Initial';
 import ZaloCallback from '../ZaloCallback/ZaloCallback';
+import ForgotPassword from '../ForgotPassword/ForgotPassword';
 import SignOut from '../SignOut/SignOut';
+import ErrorPage from '../ErrorPage/ErrorPage';
 
 export default function Router() {
   return (
@@ -15,7 +17,9 @@ export default function Router() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-out" element={<SignOut />} />
         <Route path="/zalo/callback" element={<ZaloCallback />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/error-page" element={<ErrorPage />} />
+        <Route path="*" element={<Navigate to="/error-page" />} />
       </Routes>
     </BrowserRouter>
   );

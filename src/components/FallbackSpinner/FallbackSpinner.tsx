@@ -1,5 +1,5 @@
 import React from 'react';
-import Images from '../../themes/Images';
+import Images from '@themes/Images';
 
 export default function FallbackSpinner() {
   return (
