@@ -1,11 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import {
-  Row, Col, Form, Input, Label, Alert, Button, CardText, CardTitle, UncontrolledTooltip,
+  Row, Col, Form, Input, Label, Button, CardText, CardTitle,
   Spinner,
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import {
-  Facebook, Twitter, Mail, GitHub, HelpCircle,
+  Facebook, Twitter, Mail, GitHub,
 } from 'react-feather';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -103,7 +103,7 @@ export default function SignIn() {
               </g>
             </g>
           </svg>
-          <h2 className="brand-text text-primary ms-1">Vuexy</h2>
+          <h2 className="brand-text text-primary ms-1">TravelOffice</h2>
         </Link>
         <Col className="d-none d-lg-flex align-items-center p-5" lg="8" sm="12">
           <div className="w-100 d-lg-flex align-items-center justify-content-center px-5">
@@ -113,36 +113,9 @@ export default function SignIn() {
         <Col className="d-flex align-items-center auth-bg px-2 p-lg-5" lg="4" sm="12">
           <Col className="px-xl-2 mx-auto" sm="8" md="6" lg="12">
             <CardTitle tag="h2" className="fw-bold mb-1">
-              Welcome to Vuexy! 👋
+              Welcome to TravelOffice! 👋
             </CardTitle>
             <CardText className="mb-2">Please sign-in to your account and start the adventure</CardText>
-            <Alert color="primary">
-              <div className="alert-body font-small-2">
-                <p>
-                  <small className="me-50">
-                    <span className="fw-bold">Admin:</span>
-                    {' '}
-                    admin@demo.com | admin
-                  </small>
-                </p>
-                <p>
-                  <small className="me-50">
-                    <span className="fw-bold">Client:</span>
-                    {' '}
-                    client@demo.com | client
-                  </small>
-                </p>
-              </div>
-              <HelpCircle
-                id="login-tip"
-                className="position-absolute"
-                size={18}
-                style={{ top: '10px', right: '10px' }}
-              />
-              <UncontrolledTooltip target="login-tip" placement="left">
-                This is just for ACL demo purpose.
-              </UncontrolledTooltip>
-            </Alert>
             <Form className="auth-login-form mt-2" onSubmit={handleSubmit(signIn)}>
               <div className="mb-1">
                 <Label className="form-label" for="login-email">

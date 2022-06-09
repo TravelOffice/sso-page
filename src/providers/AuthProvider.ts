@@ -63,6 +63,15 @@ class AuthProvider {
     }
     currentUser.signOut();
   }
+
+  forgotPassword = (username: string) => {
+    const cognitoUser = new CognitoUser({ Username: username, Pool: userPool });
+    cognitoUser.forgotPassword({
+      onSuccess: (result) => console.log('call result', result),
+      onFailure: (err) => alert(err),
+
+    });
+  }
 }
 
 const authProvider = new AuthProvider();
