@@ -1,14 +1,14 @@
-import React, { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  Row, Col, CardTitle, CardText, Form, Label, Input, Button, Modal,
-  ModalHeader, ModalBody, ModalFooter,
+  Row, Col, CardTitle, CardText, Form, Label, Input, Button,
 } from 'reactstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { ChevronLeft } from 'react-feather';
 import authProvider from '../../providers/AuthProvider';
+import Images from '../../themes/Images';
 
-interface ForgotPaParams {
+interface ForgotPasswordParams {
   username: string,
 }
 
@@ -16,7 +16,7 @@ interface ForgotPaParams {
 //   username: string,
 // }
 
-const defaultForgotPaParams: ForgotPaParams = {
+const defaultForgotPasswordParams: ForgotPasswordParams = {
   username: '',
 };
 
@@ -25,33 +25,22 @@ const defaultForgotPaParams: ForgotPaParams = {
 // };
 
 export default function ForgotPassword() {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [confirmCode, setConfirmCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  // const [isModalVisible, setIsModalVisible] = useState(false);
+  // const [confirmCode, setConfirmCode] = useState('');
+  // const [newPassword, setNewPassword] = useState('');
   // const [username, setUsername] = useState('');
-  const fogotPassword = useCallback((params: ForgotPaParams) => {
-    authProvider.forgotPassword(params.username);
-    console.log('hihi');
-    setIsModalVisible(true);
+  const navigate = useNavigate();
+  const fogotPassword = useCallback((params: ForgotPasswordParams) => {
+    const { username } = params;
+    authProvider.forgotPassword(username);
+
+    // Navigate to reset password page
+    navigate(`/reset-password?username=${username}`);
   }, []);
 
-  // const resetPassword = useCallback((params: ForgotPaParams) => {
-  //   authProvider.resetPassword(params.username, confirmCode, newPassword);
-  // }, []);
-
-  const handleOk = () => {
-    setIsModalVisible(false);
-    console.log(confirmCode);
-    console.log(newPassword);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-  // const { fogotPassword } = useFogotPassword();
   const {
     control, handleSubmit, formState: { errors },
-  } = useForm({ defaultValues: defaultForgotPaParams });
+  } = useForm({ defaultValues: defaultForgotPasswordParams });
   // ** Hooks
   return (
     <div className="auth-wrapper auth-cover">
@@ -108,7 +97,9 @@ export default function ForgotPassword() {
           <h2 className="brand-text text-primary ms-1">TravelOffice</h2>
         </Link>
         <Col className="d-none d-lg-flex align-items-center p-5" lg="8" sm="12">
-          <div className="w-100 d-lg-flex align-items-center justify-content-center px-5" />
+          <div className="w-100 d-lg-flex align-items-center justify-content-center px-5">
+            <img className="img-fluid" src={Images.forgotPassword} alt="Forgot Password Cover" />
+          </div>
         </Col>
         <Col className="d-flex align-items-center auth-bg px-2 p-lg-5" lg="4" sm="12">
           <Col className="px-xl-2 mx-auto" sm="8" md="6" lg="12">
@@ -131,7 +122,6 @@ export default function ForgotPassword() {
                     <Input
                       autoFocus
                       type="text"
-                      // onChange={(event) => setUsername(event.target.value)}
                       invalid={errors.username && true}
                       {...props.field}
                     />
@@ -151,28 +141,6 @@ export default function ForgotPassword() {
           </Col>
         </Col>
       </Row>
-      <Modal title="Confirm Account" isOpen={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
-        <ModalHeader>
-          <h5>Reset password</h5>
-        </ModalHeader>
-        <ModalBody>
-          <Input
-            placeholder="Authencation Code"
-            value={confirmCode}
-            onChange={(event) => setConfirmCode(event.target.value)}
-          />
-          <Input
-            placeholder="New Password"
-            className="mt-2"
-            value={newPassword}
-            onChange={(event) => setNewPassword(event.target.value)}
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Button color="primary" onClick={handleOk}>Reset Password</Button>
-          <Button color="secondary">Cancel</Button>
-        </ModalFooter>
-      </Modal>
     </div>
   );
 }

@@ -72,16 +72,21 @@ class AuthProvider {
     });
   }
 
-  resetPassword = (username: string, verificationCode: string, newPassword: string) => {
+  resetPassword = (username: string, verificationCode: string, newPassword: string,
+    confirmPassword: string) => {
     const cognitoUser = new CognitoUser({ Username: username, Pool: userPool });
-    cognitoUser.confirmPassword(verificationCode, newPassword, {
-      onSuccess() {
-        console.log('Password confirmed!');
-      },
-      onFailure(err) {
-        console.log('Password not confirmed!', err);
-      },
-    });
+    if (newPassword === confirmPassword) {
+      cognitoUser.confirmPassword(verificationCode, newPassword, {
+        onSuccess() {
+          console.log('Password confirmed!');
+        },
+        onFailure(err) {
+          console.log('Password not confirmed!', err);
+        },
+      });
+    } else {
+      alert('Mật khẩu không trùng khớp!');
+    }
   }
 }
 
