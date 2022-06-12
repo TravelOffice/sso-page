@@ -12,28 +12,15 @@ interface ForgotPasswordParams {
   username: string,
 }
 
-// interface ResetPasswordPaParams {
-//   username: string,
-// }
-
 const defaultForgotPasswordParams: ForgotPasswordParams = {
   username: '',
 };
 
-// const defaultResetPasswordPaParams: ResetPasswordPaParams = {
-//   username: '',
-// };
-
 export default function ForgotPassword() {
-  // const [isModalVisible, setIsModalVisible] = useState(false);
-  // const [confirmCode, setConfirmCode] = useState('');
-  // const [newPassword, setNewPassword] = useState('');
-  // const [username, setUsername] = useState('');
   const navigate = useNavigate();
   const fogotPassword = useCallback((params: ForgotPasswordParams) => {
     const { username } = params;
     authProvider.forgotPassword(username);
-
     // Navigate to reset password page
     navigate(`/reset-password?username=${username}`);
   }, []);

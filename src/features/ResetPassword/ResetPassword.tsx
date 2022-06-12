@@ -8,6 +8,7 @@ import { Controller, useForm } from 'react-hook-form';
 import Images from '../../themes/Images';
 import '../../assets/scss/base/pages/authentication.scss';
 import authProvider from '../../providers/AuthProvider';
+import InputPasswordToggle from '../../components/InputPasswordToggle/InputPasswordToggle';
 
 interface ResetPasswordFormData {
   verificationCode: string,
@@ -19,7 +20,7 @@ export default function ResetPassword() {
   const [params] = useSearchParams();
   const username = useMemo(() => params.get('username'), [params]);
   if (!username) {
-    // TODO: Username is not provided, render error here
+    alert('Hãy vào trang quên mật khẩu để lấy code reset password');
   }
 
   const resetPassword = useCallback((formData: ResetPasswordFormData) => {
@@ -30,7 +31,7 @@ export default function ResetPassword() {
   }, [username]);
 
   const {
-    control, handleSubmit,
+    control, handleSubmit, formState: { errors },
   } = useForm<ResetPasswordFormData>({});
 
   return (
@@ -118,8 +119,8 @@ export default function ResetPassword() {
                 <Controller
                   name="newPassword"
                   control={control}
-                  render={({ field }) => (
-                    <Input {...field} />
+                  render={(props: any) => (
+                    <InputPasswordToggle className="input-group-merge" invalid={errors.newPassword && true} {...props.field} />
                   )}
                 />
               </div>
@@ -130,8 +131,8 @@ export default function ResetPassword() {
                 <Controller
                   name="confirmPassword"
                   control={control}
-                  render={({ field }) => (
-                    <Input {...field} />
+                  render={(props: any) => (
+                    <InputPasswordToggle className="input-group-merge" invalid={errors.confirmPassword && true} {...props.field} />
                   )}
                 />
               </div>
