@@ -1,10 +1,12 @@
 import React, { useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Row, Col, CardTitle, CardText, Form, Label, Input, Button,
+  Row, Col, CardTitle, CardText, Form, Label, Input, Button, FormFeedback,
 } from 'reactstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { ChevronLeft } from 'react-feather';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import authProvider from '../../providers/AuthProvider';
 import Images from '../../themes/Images';
 
@@ -12,9 +14,11 @@ interface ForgotPasswordParams {
   username: string,
 }
 
-const defaultForgotPasswordParams: ForgotPasswordParams = {
-  username: '',
-};
+const schema = yup.object().shape({
+  username: yup
+    .string()
+    .required('Please enter Username'),
+});
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -27,7 +31,7 @@ export default function ForgotPassword() {
 
   const {
     control, handleSubmit, formState: { errors },
-  } = useForm({ defaultValues: defaultForgotPasswordParams });
+  } = useForm<ForgotPasswordParams>({ resolver: yupResolver(schema) });
   // ** Hooks
   return (
     <div className="auth-wrapper auth-cover">
@@ -114,6 +118,7 @@ export default function ForgotPassword() {
                     />
                   )}
                 />
+                {errors.username && <FormFeedback>{errors.username.message}</FormFeedback>}
               </div>
               <Button type="submit" color="primary" block>
                 Send code

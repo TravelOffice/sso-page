@@ -1,10 +1,14 @@
-import React, { useCallback, useMemo } from 'react';
+import React, {
+  useCallback, useEffect, useMemo, useState,
+} from 'react';
 import {
-  Row, Col, Form, Input, Label, Button, CardText, CardTitle,
+  Row, Col, Form, Label, Button, CardText, CardTitle, FormFeedback, Tooltip, Input,
 } from 'reactstrap';
-import { Link, useSearchParams } from 'react-router-dom';
-import { ChevronLeft } from 'react-feather';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { ChevronLeft, Info } from 'react-feather';
 import { Controller, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import Images from '../../themes/Images';
 import '../../assets/scss/base/pages/authentication.scss';
 import authProvider from '../../providers/AuthProvider';
@@ -16,12 +20,39 @@ interface ResetPasswordFormData {
   confirmPassword: string,
 }
 
+const schema = yup.object().shape({
+  verificationCode: yup
+    .string()
+    .min(6, 'Authentication code must be exactly 6 characters')
+    .max(6, 'Authentication code must be exactly 6 characters')
+    .required('Please Enter your code'),
+  newPassword: yup
+    .string()
+    .required('Please Enter your password')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
+      'Password is invalid',
+    ),
+  confirmPassword: yup
+    .string()
+    .required('Please Enter your password')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
+      'Password is invalid',
+    ),
+});
+
 export default function ResetPassword() {
+  const navigate = useNavigate();
   const [params] = useSearchParams();
+  const [newPasswordTooltipOpen, setNewPasswordTooltipOpen] = useState(false);
+  const [confirmPasswordTooltipOpen, setConfirmPasswordTooltipOpen] = useState(false);
   const username = useMemo(() => params.get('username'), [params]);
-  if (!username) {
-    alert('Hãy vào trang quên mật khẩu để lấy code reset password');
-  }
+  useEffect(() => {
+    if (!username) {
+      navigate('/error-page');
+    }
+  }, []);
 
   const resetPassword = useCallback((formData: ResetPasswordFormData) => {
     if (username != null) {
@@ -32,7 +63,7 @@ export default function ResetPassword() {
 
   const {
     control, handleSubmit, formState: { errors },
-  } = useForm<ResetPasswordFormData>({});
+  } = useForm<ResetPasswordFormData>({ resolver: yupResolver(schema) });
 
   return (
     <div className="auth-wrapper auth-cover">
@@ -107,34 +138,71 @@ export default function ResetPassword() {
                 <Controller
                   name="verificationCode"
                   control={control}
-                  render={({ field }) => (
-                    <Input {...field} />
+                  render={(props: any) => (
+                    <Input
+                      className="input-group-merge"
+                      invalid={errors.verificationCode && true}
+                      {...props.field}
+                    />
                   )}
                 />
+                {errors.verificationCode
+                && <FormFeedback>{errors.verificationCode.message}</FormFeedback>}
               </div>
               <div className="mb-1">
                 <Label className="form-label" for="new-password">
-                  New Password
+                  <span className="form-label-password">New Password</span>
+                  {' '}
+                  <Info id="new-password" size={14} />
+                  <Tooltip
+                    placement="bottom"
+                    isOpen={newPasswordTooltipOpen}
+                    target="new-password"
+                    toggle={() => setNewPasswordTooltipOpen(!newPasswordTooltipOpen)}
+                  >
+                    <span>
+                      Password must include at least 8 characters, 1 uppercase, 1 lowercase,
+                      1 number and 1 special Case Character
+                    </span>
+                  </Tooltip>
                 </Label>
                 <Controller
                   name="newPassword"
+                  rules={{ required: true }}
                   control={control}
                   render={(props: any) => (
                     <InputPasswordToggle className="input-group-merge" invalid={errors.newPassword && true} {...props.field} />
                   )}
                 />
+                {errors.newPassword && <FormFeedback>{errors.newPassword.message}</FormFeedback>}
               </div>
               <div className="mb-1">
                 <Label className="form-label" for="confirm-password">
-                  Confirm Password
+                  <span className="form-label-password">Confirm Password</span>
+                  {' '}
+                  <Info id="confirm-password" size={14} />
+                  <Tooltip
+                    placement="bottom"
+                    isOpen={confirmPasswordTooltipOpen}
+                    target="confirm-password"
+                    toggle={() => setConfirmPasswordTooltipOpen(!confirmPasswordTooltipOpen)}
+                  >
+                    <span>
+                      Password must include at least 8 characters, 1 uppercase, 1 lowercase,
+                      1 number and 1 special Case Character
+                    </span>
+                  </Tooltip>
                 </Label>
                 <Controller
                   name="confirmPassword"
+                  rules={{ required: true }}
                   control={control}
                   render={(props: any) => (
                     <InputPasswordToggle className="input-group-merge" invalid={errors.confirmPassword && true} {...props.field} />
                   )}
                 />
+                {errors.confirmPassword
+                && <FormFeedback>{errors.confirmPassword.message}</FormFeedback>}
               </div>
               <Button color="primary" block>
                 Set New Password

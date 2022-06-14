@@ -81,11 +81,11 @@ class AuthProvider {
           console.log('Password confirmed!');
         },
         onFailure(err) {
-          console.log('Password not confirmed!', err);
+          alert(err);
         },
       });
     } else {
-      alert('Mật khẩu không trùng khớp!');
+      alert("Password confirmation doesn't match the password");
     }
   }
 }

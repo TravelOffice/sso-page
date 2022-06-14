@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import {
   Row, Col, Form, Input, Label, Button, CardText, CardTitle,
   Spinner,
+  FormFeedback,
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import {
@@ -9,6 +10,8 @@ import {
 } from 'react-feather';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 import InputPasswordToggle from '../../components/InputPasswordToggle/InputPasswordToggle';
 import Images from '../../themes/Images';
 import '../../assets/scss/base/pages/authentication.scss';
@@ -21,11 +24,14 @@ interface SignInParams {
   rememberMe: boolean,
 }
 
-const defaultSignInParams : SignInParams = {
-  username: '',
-  password: '',
-  rememberMe: false,
-};
+const schema = yup.object().shape({
+  username: yup
+    .string()
+    .required('Please enter Username'),
+  password: yup
+    .string()
+    .required('Please enter Password'),
+});
 
 function useSignIn() {
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -50,7 +56,7 @@ export default function SignIn() {
   const { signIn, isSigningIn } = useSignIn();
   const {
     control, handleSubmit, formState: { errors },
-  } = useForm({ defaultValues: defaultSignInParams });
+  } = useForm<SignInParams>({ resolver: yupResolver(schema) });
   return (
     <div className="auth-wrapper auth-cover">
       <Row className="auth-inner m-0">
@@ -129,12 +135,12 @@ export default function SignIn() {
                     <Input
                       autoFocus
                       type="text"
-                      placeholder="john@example.com"
                       invalid={errors.username && true}
                       {...props.field}
                     />
                   )}
                 />
+                {errors.username && <FormFeedback>{errors.username.message}</FormFeedback>}
               </div>
               <div className="mb-1">
                 <div className="d-flex justify-content-between">
@@ -153,6 +159,7 @@ export default function SignIn() {
                     <InputPasswordToggle className="input-group-merge" invalid={errors.password && true} {...props.field} />
                   )}
                 />
+                {errors.password && <FormFeedback>{errors.password.message}</FormFeedback>}
               </div>
               <div className="form-check mb-1">
                 <Input type="checkbox" id="remember-me" defaultChecked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} />

@@ -138,6 +138,10 @@ $auth-1-inner-max-width: 400px !default;
   }
 }
 
+.form-label-password {
+  vertical-align: middle;
+}
+
 // Auth pages for mobile and small height & width screen
 @media (max-height: 825px) and (max-width: 991.98px) {
   .dark-layout {
