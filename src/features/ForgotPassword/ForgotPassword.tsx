@@ -26,7 +26,7 @@ export default function ForgotPassword() {
     const { username } = params;
     authProvider.forgotPassword(username);
     // Navigate to reset password page
-    navigate(`/reset-password?username=${username}`);
+    navigate(`/set-new-password?username=${username}`);
   }, []);
 
   const {
@@ -125,7 +125,7 @@ export default function ForgotPassword() {
               </Button>
             </Form>
             <p className="text-center mt-2">
-              <Link to="/login">
+              <Link to="/sign-in">
                 <ChevronLeft className="rotate-rtl me-25" size={14} />
                 <span className="align-middle">Back to login</span>
               </Link>

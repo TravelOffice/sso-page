@@ -2,7 +2,7 @@ import React, {
   useCallback, useEffect, useMemo, useState,
 } from 'react';
 import {
-  Row, Col, Form, Label, Button, CardText, CardTitle, FormFeedback, Tooltip, Input,
+  Row, Col, Form, Label, Button, CardTitle, FormFeedback, Tooltip, Input,
 } from 'reactstrap';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Info } from 'react-feather';
@@ -13,6 +13,7 @@ import Images from '../../themes/Images';
 import '../../assets/scss/base/pages/authentication.scss';
 import authProvider from '../../providers/AuthProvider';
 import InputPasswordToggle from '../../components/InputPasswordToggle/InputPasswordToggle';
+import toasty from '../../components/Toasty/Toasty';
 
 interface ResetPasswordFormData {
   verificationCode: string,
@@ -57,7 +58,11 @@ export default function ResetPassword() {
   const resetPassword = useCallback((formData: ResetPasswordFormData) => {
     if (username != null) {
       authProvider.resetPassword(username, formData.verificationCode, formData.newPassword,
-        formData.confirmPassword);
+        formData.confirmPassword).then(() => {
+        toasty.show({ title: 'Success!', type: 'success', message: 'Set new password success.' });
+      }).catch((error: Error) => {
+        toasty.show({ title: 'Error!', type: 'error', message: `${error.message}` });
+      });
     }
   }, [username]);
 
@@ -127,9 +132,8 @@ export default function ResetPassword() {
         <Col className="d-flex align-items-center auth-bg px-2 p-lg-5" lg="4" sm="12">
           <Col className="px-xl-2 mx-auto" sm="8" md="6" lg="12">
             <CardTitle tag="h2" className="fw-bold mb-1">
-              Reset Password
+              Set new Password
             </CardTitle>
-            <CardText className="mb-2">Your new password must be different from previously used passwords</CardText>
             <Form className="auth-reset-password-form mt-2" onSubmit={handleSubmit(resetPassword)}>
               <div className="mb-1">
                 <Label className="form-label" for="verificationCode">
@@ -178,7 +182,7 @@ export default function ResetPassword() {
               </div>
               <div className="mb-1">
                 <Label className="form-label" for="confirm-password">
-                  <span className="form-label-password">Confirm Password</span>
+                  <span className="form-label-password">Confirm new Password</span>
                   {' '}
                   <Info id="confirm-password" size={14} />
                   <Tooltip
@@ -188,8 +192,7 @@ export default function ResetPassword() {
                     toggle={() => setConfirmPasswordTooltipOpen(!confirmPasswordTooltipOpen)}
                   >
                     <span>
-                      Password must include at least 8 characters, 1 uppercase, 1 lowercase,
-                      1 number and 1 special Case Character
+                      Confirm new password must be match new password
                     </span>
                   </Tooltip>
                 </Label>
@@ -205,13 +208,13 @@ export default function ResetPassword() {
                 && <FormFeedback>{errors.confirmPassword.message}</FormFeedback>}
               </div>
               <Button color="primary" block>
-                Set New Password
+                Submit
               </Button>
             </Form>
             <p className="text-center mt-2">
-              <Link to="/pages/login-cover">
+              <Link to="/sign-in">
                 <ChevronLeft className="rotate-rtl me-25" size={14} />
-                <span className="align-middle">Back to login</span>
+                <span className="align-left">Back to login</span>
               </Link>
             </p>
           </Col>

@@ -17,8 +17,8 @@ class AuthProvider {
         onSuccess(session) {
           resolve(session);
         },
-        onFailure(error: any) {
-          reject(new Error(error));
+        onFailure() {
+          reject(new Error('Username or Password invalid'));
         },
         newPasswordRequired(userAttributes: any) {
           // User was signed up by an admin and must provide new
@@ -64,29 +64,34 @@ class AuthProvider {
     currentUser.signOut();
   }
 
-  forgotPassword = (username: string) => {
+  forgotPassword = async (username: string) => {
     const cognitoUser = new CognitoUser({ Username: username, Pool: userPool });
-    cognitoUser.forgotPassword({
-      onSuccess: (result) => console.log('call result', result),
-      onFailure: (err) => alert(err),
+    return new Promise((resolve, reject) => {
+      cognitoUser.forgotPassword({
+        onSuccess: (result) => resolve(result),
+        onFailure: (error: any) => reject(new Error(error)),
+      });
     });
   }
 
-  resetPassword = (username: string, verificationCode: string, newPassword: string,
+  resetPassword = async (username: string, verificationCode: string, newPassword: string,
     confirmPassword: string) => {
     const cognitoUser = new CognitoUser({ Username: username, Pool: userPool });
-    if (newPassword === confirmPassword) {
-      cognitoUser.confirmPassword(verificationCode, newPassword, {
-        onSuccess() {
-          console.log('Password confirmed!');
-        },
-        onFailure(err) {
-          alert(err);
-        },
-      });
-    } else {
-      alert("Password confirmation doesn't match the password");
+    if (newPassword !== confirmPassword) {
+      return Promise.reject(new Error("Confirm password doesn't match New Password"));
     }
+    return new Promise((resolve, reject) => {
+      if (newPassword === confirmPassword) {
+        cognitoUser.confirmPassword(verificationCode, newPassword, {
+          onSuccess(result) {
+            resolve(result);
+          },
+          onFailure() {
+            reject(new Error('Invalid code provided, please request a code again.'));
+          },
+        });
+      }
+    });
   }
 }
 

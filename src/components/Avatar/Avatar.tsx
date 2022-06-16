@@ -119,7 +119,7 @@ Avatar.defaultProps = {
   imgClassName: undefined,
   content: undefined,
   size: 'sm',
-  status: 'busy',
+  status: undefined,
   contentStyles: {},
   imgHeight: 10,
   imgWidth: 10,

@@ -9,14 +9,13 @@ import {
   Facebook, Twitter, Mail, GitHub,
 } from 'react-feather';
 import { useForm, Controller } from 'react-hook-form';
-import { toast } from 'react-toastify';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import InputPasswordToggle from '../../components/InputPasswordToggle/InputPasswordToggle';
 import Images from '../../themes/Images';
 import '../../assets/scss/base/pages/authentication.scss';
 import authProvider from '../../providers/AuthProvider';
-import ErrorToast from '../../components/ErrorToast/ErrorToast';
+import toasty from '../../components/Toasty/Toasty';
 
 interface SignInParams {
   username: string,
@@ -40,10 +39,9 @@ function useSignIn() {
     authProvider.signIn(params.username, params.password).then((session) => {
       const message = { type: 'cognito', session };
       window.parent.postMessage(message, '*');
+      toasty.show({ title: 'Success!', type: 'success', message: 'Login sucsess' });
     }).catch((error: Error) => {
-      toast.error(<ErrorToast text={error.message} />, {
-        icon: false, hideProgressBar: true, autoClose: false,
-      });
+      toasty.show({ title: 'Error!', type: 'error', message: `${error.message}` });
     }).finally(() => {
       setIsSigningIn(false);
     });
