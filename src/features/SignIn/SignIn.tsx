@@ -15,6 +15,7 @@ import authProvider from '@providers/AuthProvider';
 import toasty from '@components/Toasty/Toasty';
 
 interface SignInParams {
+  tenant: string,
   username: string,
   password: string,
   rememberMe: boolean,
@@ -29,29 +30,41 @@ const schema = yup.object().shape({
     .required('Please enter password'),
 });
 
-function useSignIn() {
-  const [isSigningIn, setIsSigningIn] = useState(false);
-  const signIn = useCallback((params: SignInParams) => {
-    setIsSigningIn(true);
-    authProvider.signIn(params.username, params.password).then((session) => {
-      const message = { type: 'cognito-signin', session };
-      window.parent.postMessage(message, '*');
-      toasty.show({ title: 'Success!', type: 'success', message: 'Login sucsessfully' });
-    }).catch((error: Error) => {
-      toasty.show({ title: 'Error!', type: 'error', message: error.message });
-    }).finally(() => {
-      setIsSigningIn(false);
-    });
-  }, []);
-  return { signIn, isSigningIn };
-}
-
 export default function SignIn() {
-  const [rememberMe, setRememberMe] = useState(false);
-  const { signIn, isSigningIn } = useSignIn();
+  const [rootAccount, setRootAccount] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const signInCallback = useCallback((params: SignInParams) => {
+    setIsSigningIn(true);
+    console.log(rootAccount);
+    if (rootAccount) {
+      authProvider.signIn(params.username, params.password).then((session) => {
+        const message = { type: 'cognito-signin', session };
+        window.parent.postMessage(message, '*');
+        toasty.show({ title: 'Success!', type: 'success', message: 'Login sucsessfully' });
+      }).catch((error: Error) => {
+        toasty.show({ title: 'Error!', type: 'error', message: error.message });
+      }).finally(() => {
+        setIsSigningIn(false);
+      });
+    } else {
+      const usernameTenant = `${params.tenant}#${params.username}`;
+      console.log(usernameTenant);
+      authProvider.signIn(usernameTenant, params.password).then((session) => {
+        const message = { type: 'cognito-signin', session };
+        window.parent.postMessage(message, '*');
+        toasty.show({ title: 'Success!', type: 'success', message: 'Login sucsessfully' });
+      }).catch((error: Error) => {
+        toasty.show({ title: 'Error!', type: 'error', message: error.message });
+      }).finally(() => {
+        setIsSigningIn(false);
+      });
+    }
+  }, [rootAccount]);
+
   const {
     control, handleSubmit, formState: { errors },
   } = useForm<SignInParams>({ resolver: yupResolver(schema) });
+
   return (
     <div className="auth-wrapper auth-cover">
       <Row className="auth-inner m-0">
@@ -70,7 +83,36 @@ export default function SignIn() {
               Welcome to TravelOffice! 👋
             </CardTitle>
             <CardText className="mb-2">Please sign-in to your account and start the adventure</CardText>
-            <Form className="auth-login-form mt-2" onSubmit={handleSubmit(signIn)}>
+            <Form className="auth-login-form mt-2" onSubmit={handleSubmit(signInCallback)}>
+              <div className="form-check mb-1">
+                <Input type="checkbox" id="root-account" defaultChecked={rootAccount} onChange={(event) => setRootAccount(event.target.checked)} />
+                <Label className="form-check-label" for="root-account">
+                  Root account
+                </Label>
+              </div>
+              { rootAccount ? (
+                <div />
+              )
+                : (
+                  <div className="mb-1">
+                    <Label className="form-label-font-size" for="tenant">
+                      Tenant
+                    </Label>
+                    <Controller
+                      name="tenant"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          autoFocus
+                          type="text"
+                          invalid={!!errors.tenant}
+                          {...field}
+                        />
+                      )}
+                    />
+                    {errors.tenant && <FormFeedback>{errors.tenant.message}</FormFeedback>}
+                  </div>
+                )}
               <div className="mb-1">
                 <Label className="form-label-font-size" for="login-email">
                   Username
@@ -106,12 +148,6 @@ export default function SignIn() {
                   )}
                 />
                 {errors.password && <FormFeedback>{errors.password.message}</FormFeedback>}
-              </div>
-              <div className="form-check mb-1">
-                <Input type="checkbox" id="remember-me" defaultChecked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} />
-                <Label className="form-check-label" for="remember-me">
-                  Remember Me
-                </Label>
               </div>
               <Button type="submit" color="primary" block disabled={isSigningIn}>
                 {isSigningIn ? <Spinner size="sm" style={{ marginRight: 20 }} /> : 'Sign in'}
