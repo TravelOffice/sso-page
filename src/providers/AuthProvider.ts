@@ -110,6 +110,24 @@ class AuthProvider {
       });
     });
   }
+
+  refreshToken = async () => {
+    const currentUser = userPool.getCurrentUser();
+    if (!currentUser) {
+      return Promise.reject(new Error('User has not logged in!'));
+    }
+    const currentSession = await this.getSession();
+    const token = currentSession.getRefreshToken();
+    return new Promise((resolve, reject) => {
+      currentUser?.refreshSession(token, (err, session) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(session);
+        }
+      });
+    });
+  }
 }
 
 const authProvider = new AuthProvider();
