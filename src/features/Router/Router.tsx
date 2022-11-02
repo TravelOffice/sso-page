@@ -3,6 +3,7 @@ import {
   BrowserRouter, Routes, Route, Navigate,
 } from 'react-router-dom';
 import RefreshToken from '@features/RefreshToken/RefreshToken';
+import MailCallback from '@features/MailCallback/MailCallback';
 import SignIn from '../SignIn/SignIn';
 import Initial from '../Initial/Initial';
 import ZaloCallback from '../ZaloCallback/ZaloCallback';
@@ -21,6 +22,7 @@ export default function Router() {
         <Route path="/zalo/callback" element={<ZaloCallback />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/error-page" element={<ErrorPage />} />
+        <Route path="/mail/callback" element={<MailCallback />} />
         <Route path="*" element={<Navigate to="/error-page" />} />
       </Routes>
     </BrowserRouter>
