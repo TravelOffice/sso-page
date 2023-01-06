@@ -128,6 +128,36 @@ class AuthProvider {
       });
     });
   }
+
+  /**
+   * related https://github.com/amazon-archives/amazon-cognito-identity-js/issues/71#issuecomment-229484641
+   * @param oldPassword password old of user
+   * @param newPassword new password of user
+   * @returns message or error
+   */
+
+  changePassword = async (oldPassword: string, newPassword: string) => {
+    const currentUser = userPool.getCurrentUser();
+    if (!currentUser) {
+      return Promise.reject(new Error('User has not logged in!'));
+    }
+
+    return new Promise((resolve, reject) => {
+      currentUser.getSession((error: Error | null, session: null | CognitoUserSession) => {
+        if (error) {
+          reject(error);
+        } else if (session) {
+          currentUser?.changePassword(oldPassword, newPassword, (err, message) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(message);
+            }
+          });
+        }
+      });
+    });
+  };
 }
 
 const authProvider = new AuthProvider();
