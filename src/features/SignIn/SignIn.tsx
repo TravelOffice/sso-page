@@ -31,16 +31,19 @@ const schema = yup.object().shape({
 });
 
 export default function SignIn() {
-  const [rootAccount, setRootAccount] = useState(false);
+  const [rootAccount, setRootAccount] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
+
   const signInCallback = useCallback((params: SignInParams) => {
     setIsSigningIn(true);
-    console.log(rootAccount);
+    const param = new URLSearchParams(window.location.search);
+    const redirectUrl: string | null = param.get('redirect_url');
     if (rootAccount) {
       authProvider.signIn(params.username, params.password).then((session) => {
-        const message = { type: 'cognito-signin', session };
-        window.parent.postMessage(message, '*');
         toasty.show({ title: 'Success!', type: 'success', message: 'Login sucsessfully' });
+        if (redirectUrl) {
+          window.location.replace(`${redirectUrl}?token=${session.getIdToken().getJwtToken()}`);
+        }
       }).catch((error: Error) => {
         toasty.show({ title: 'Error!', type: 'error', message: error.message });
       }).finally(() => {
