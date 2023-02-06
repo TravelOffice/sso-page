@@ -5,12 +5,20 @@ import authProvider from '@providers/AuthProvider';
 
 export default function Initial() {
   const navigate = useNavigate();
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectUri: string | null = searchParams.get('redirect_uri');
   useEffect(() => {
     authProvider.getSession().then((session) => {
-      const message = { type: 'cognito-signin', session };
-      window.parent.postMessage(message, '*');
+      if (redirectUri) {
+        const jwtToken = session.getIdToken().getJwtToken();
+        window.location.replace(`${redirectUri}?id_token=${jwtToken}`);
+      }
     }).catch(() => {
-      navigate('/sign-in');
+      navigate('/sign-in', {
+        state: {
+          redirectUri,
+        },
+      });
     });
   }, []);
   return (
