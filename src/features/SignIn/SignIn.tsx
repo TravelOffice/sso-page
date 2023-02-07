@@ -4,7 +4,7 @@ import {
   Spinner,
   FormFeedback,
 } from 'reactstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -33,18 +33,18 @@ const schema = yup.object().shape({
 export default function SignIn() {
   const [rootAccount, setRootAccount] = useState(true);
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const { state } : any = useLocation();
 
   const signInCallback = useCallback((params: SignInParams) => {
     setIsSigningIn(true);
     const searchParams = new URLSearchParams(window.location.search);
-    const redirectUrl: string | null = searchParams.get('redirect_url');
+    const redirectUri: string | null = searchParams.get('redirect_uri');
     if (rootAccount) {
       authProvider.signIn(params.username, params.password).then((session) => {
-        toasty.show({ title: 'Success!', type: 'success', message: 'Login sucsessfully' });
-        if (redirectUrl) {
-          const jwtToken = session.getIdToken().getJwtToken();
-          window.location.replace(`${redirectUrl}?token=${jwtToken}`);
-        }
+        toasty.show({ title: 'Success!', type: 'success', message: 'Login successfully' });
+        const url = redirectUri || state?.redirectUri || '/';
+        const jwtToken = session.getIdToken().getJwtToken();
+        window.location.replace(`${url}?id_token=${jwtToken}`);
       }).catch((error: Error) => {
         toasty.show({ title: 'Error!', type: 'error', message: error.message });
       }).finally(() => {
