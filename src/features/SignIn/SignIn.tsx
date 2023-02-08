@@ -13,6 +13,7 @@ import Images from '@themes/Images';
 import '@assets/scss/base/pages/authentication.scss';
 import authProvider from '@providers/AuthProvider';
 import toasty from '@components/Toasty/Toasty';
+import { getRedirectUri } from '../../utils/getRedirectUriUtils';
 
 interface SignInParams {
   tenant: string,
@@ -37,12 +38,11 @@ export default function SignIn() {
 
   const signInCallback = useCallback((params: SignInParams) => {
     setIsSigningIn(true);
-    const searchParams = new URLSearchParams(window.location.search);
-    const redirectUri: string | null = searchParams.get('redirect_uri');
+    const redirectUri = getRedirectUri(window.location.search);
+    const url = redirectUri || state?.redirectUri;
     if (rootAccount) {
       authProvider.signIn(params.username, params.password).then((session) => {
         toasty.show({ title: 'Success!', type: 'success', message: 'Login successfully' });
-        const url = redirectUri || state?.redirectUri || '/';
         const jwtToken = session.getIdToken().getJwtToken();
         window.location.replace(`${url}?id_token=${jwtToken}`);
       }).catch((error: Error) => {
@@ -52,11 +52,10 @@ export default function SignIn() {
       });
     } else {
       const usernameTenant = `${params.tenant}#${params.username}`;
-      console.log(usernameTenant);
       authProvider.signIn(usernameTenant, params.password).then((session) => {
-        const message = { type: 'cognito-signin', session };
-        window.parent.postMessage(message, '*');
-        toasty.show({ title: 'Success!', type: 'success', message: 'Login sucsessfully' });
+        toasty.show({ title: 'Success!', type: 'success', message: 'Login successfully' });
+        const jwtToken = session.getIdToken().getJwtToken();
+        window.location.replace(`${url}?id_token=${jwtToken}`);
       }).catch((error: Error) => {
         toasty.show({ title: 'Error!', type: 'error', message: error.message });
       }).finally(() => {
