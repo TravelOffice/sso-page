@@ -38,6 +38,8 @@ const schema = yup.object().shape({
 });
 
 export default function ChangePasswordForm() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectUri: string | null = searchParams.get('redirect_uri');
   const forgotPasswordCallback = useCallback(
     (params: ChangePasswordFormData) => {
       const { oldPassword, newPassword } = params;
@@ -49,6 +51,8 @@ export default function ChangePasswordForm() {
             type: 'success',
             message: 'Your password has been changed successfully',
           });
+          window.location.replace(`${redirectUri}?event=change-password-success`);
+          authProvider.signOut();
         })
         .catch((error: Error) => {
           toasty.show({
