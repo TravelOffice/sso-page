@@ -1,11 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import {
-  Row, Col, Form, Input, Label, Button, CardText, CardTitle,
-  Spinner,
-  FormFeedback,
+  Button, CardText, CardTitle, Col, Form, FormFeedback, Input, Label, Row, Spinner,
 } from 'reactstrap';
 import { Link, useLocation } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import InputPasswordToggle from '@components/InputPasswordToggle/InputPasswordToggle';
@@ -32,19 +30,42 @@ const schema = yup.object().shape({
 });
 
 export default function SignIn() {
-  const [rootAccount, setRootAccount] = useState(true);
+  const [rootAccount, setRootAccount] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const { state } : any = useLocation();
+  const { state }: any = useLocation();
+
+  const redirectUri = getRedirectUri(window.location.search);
+  const url = redirectUri || state?.redirectUri;
+
+  // Get base domain from current url of sso page, remove prefix 'sso' from url, ex: traveloffice.vn
+  let baseDomain = window.location.hostname.split('.').splice(-2).join('.');
+
+  // Extract tenant, base domain, protocol from url to autofill in the tenant field in login form
+  // and generate redirect url
+  let tenant = '';
+  let protocol = 'https:';
+  const validUrlPattern = /^(https?:\/\/[^.]+\.[^.]+\.[^.]+)$/; // Regex for validating url, ex: tenant.example.com
+  if (url && validUrlPattern.test(url)) {
+    const urlObj = new URL(url);
+    let rest;
+    [tenant, ...rest] = urlObj.hostname.split('.');
+    baseDomain = rest.join('.');
+    protocol = urlObj.protocol;
+  }
 
   const signInCallback = useCallback((params: SignInParams) => {
     setIsSigningIn(true);
-    const redirectUri = getRedirectUri(window.location.search);
-    const url = redirectUri || state?.redirectUri;
     if (rootAccount) {
       authProvider.signIn(params.username, params.password).then((session) => {
         toasty.show({ title: 'Success!', type: 'success', message: 'Login successfully' });
         const jwtToken = session.getIdToken().getJwtToken();
-        window.location.replace(`${url}?id_token=${jwtToken}`);
+        // Get root tenant from jwt token, root username is the same as root tenant
+        tenant = session.getIdToken().decodePayload()['cognito:username'];
+        let redirectUrl = `${protocol}//${tenant}.${baseDomain}`;
+        // if node_env is development, redirect to url instead of
+        // redirectUrl which generated from tenant and baseDomain
+        if (process.env.NODE_ENV === 'development') redirectUrl = url;
+        window.location.replace(`${redirectUrl}?id_token=${jwtToken}`);
       }).catch((error: Error) => {
         toasty.show({ title: 'Error!', type: 'error', message: error.message });
       }).finally(() => {
@@ -52,10 +73,13 @@ export default function SignIn() {
       });
     } else {
       const usernameTenant = `${params.tenant}#${params.username}`;
+      let redirectUrl = `${protocol}//${params.tenant}.${baseDomain}`;
+      if (process.env.NODE_ENV === 'development') redirectUrl = url;
+
       authProvider.signIn(usernameTenant, params.password).then((session) => {
         toasty.show({ title: 'Success!', type: 'success', message: 'Login successfully' });
         const jwtToken = session.getIdToken().getJwtToken();
-        window.location.replace(`${url}?id_token=${jwtToken}`);
+        window.location.replace(`${redirectUrl}?id_token=${jwtToken}`);
       }).catch((error: Error) => {
         toasty.show({ title: 'Error!', type: 'error', message: error.message });
       }).finally(() => {
@@ -66,7 +90,10 @@ export default function SignIn() {
 
   const {
     control, handleSubmit, formState: { errors },
-  } = useForm<SignInParams>({ resolver: yupResolver(schema) });
+  } = useForm<SignInParams>({
+    resolver: yupResolver(schema),
+    defaultValues: { tenant },
+  });
 
   return (
     <div className="auth-wrapper auth-cover">
@@ -88,12 +115,17 @@ export default function SignIn() {
             <CardText className="mb-2">Please sign-in to your account and start the adventure</CardText>
             <Form className="auth-login-form mt-2" onSubmit={handleSubmit(signInCallback)}>
               <div className="form-check mb-1">
-                <Input type="checkbox" id="root-account" defaultChecked={rootAccount} onChange={(event) => setRootAccount(event.target.checked)} />
+                <Input
+                  type="checkbox"
+                  id="root-account"
+                  defaultChecked={rootAccount}
+                  onChange={(event) => setRootAccount(event.target.checked)}
+                />
                 <Label className="form-check-label" for="root-account">
                   Root account
                 </Label>
               </div>
-              { rootAccount ? (
+              {rootAccount ? (
                 <div />
               )
                 : (
@@ -110,6 +142,7 @@ export default function SignIn() {
                           type="text"
                           invalid={!!errors.tenant}
                           {...field}
+                          disabled={tenant !== ''}
                         />
                       )}
                     />
