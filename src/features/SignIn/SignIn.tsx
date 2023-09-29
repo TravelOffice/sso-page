@@ -29,6 +29,11 @@ const schema = yup.object().shape({
     .required('Please enter password'),
 });
 
+// List of domain prefixes that should not be considered as tenants
+const prefixDomainWhitelist = [
+  'marketplace',
+];
+
 export default function SignIn() {
   const [rootAccount, setRootAccount] = useState(false);
   const [isSigningIn, setIsSigningIn] = useState(false);
@@ -44,11 +49,17 @@ export default function SignIn() {
   // and generate redirect url
   let tenant = '';
   let protocol = 'https:';
+  let isInWhitelist = false;
   const validUrlPattern = /^(https?:\/\/[^.]+\.[^.]+\.[^.]+)$/; // Regex for validating url, ex: tenant.example.com
   if (url && validUrlPattern.test(url)) {
     const urlObj = new URL(url);
     let rest;
     [tenant, ...rest] = urlObj.hostname.split('.');
+
+    if (prefixDomainWhitelist.includes(tenant)) {
+      tenant = '';
+      isInWhitelist = true;
+    }
     baseDomain = rest.join('.');
     protocol = urlObj.protocol;
   }
@@ -74,7 +85,10 @@ export default function SignIn() {
     } else {
       const usernameTenant = `${params.tenant}#${params.username}`;
       let redirectUrl = `${protocol}//${params.tenant}.${baseDomain}`;
-      if (process.env.NODE_ENV === 'development') redirectUrl = url;
+
+      // if node_env is development or tenant is in whitelist, redirect to original url instead of
+      // redirectUrl which generated from tenant entered and baseDomain
+      if (process.env.NODE_ENV === 'development' || isInWhitelist) redirectUrl = url;
 
       authProvider.signIn(usernameTenant, params.password).then((session) => {
         toasty.show({ title: 'Success!', type: 'success', message: 'Login successfully' });
